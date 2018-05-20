@@ -1,18 +1,31 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-//var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+//const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const conf = require('./config'); 
-var usersRouter = require('./routes/users');
-const loginUser = require('./routes/login');
-const signup = require('./routes/signup');
+const expense = require('./routes/expense');
+
 const mongoose = require('./lib/mongo');
 const bodyparser = require("body-parser");
 const jwt = require("jsonwebtoken");
-var app = express();
 
-// view engine setup
+//============Public Rout========================//
+const loginUser =  require('./routes/login');
+const signup    =  require('./routes/signup');
+
+//============client rout=======================//
+const clientUser = require('./routes/users');
+const clientContact = require('./routes/phoneNumber');
+
+//=============admin rout============================//
+const adminContact = require('./routes/admin/phoneNumber');
+const adminUser =  require('./routes/admin/users');
+
+const cors = require('cors')
+const app = express();
+
+app.use(cors())
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
@@ -29,13 +42,12 @@ app.use(function(req, res, next) {
 });
 
 app.use('/', loginUser);
+app.use('/',signup)
 
 
 app.use(function(req, res, next) {
   const token     = req.headers["x-access-token"];
   const userEmail = req.headers["useremail"];
-
-
   let db = req.db;
   let collection = db.collection('UserDetails');
         //check and verify the token using secret
@@ -67,8 +79,22 @@ app.use(function(req, res, next) {
 });
 
 
-app.use('/', signup);
-app.use('/', usersRouter);
+app.use('/', clientUser);
+app.use('/', clientContact);
+
+
+app.use('/admin',function(req, res, next) {
+    let decoded = req.decoded
+    if(decoded.role=='ADMIN')
+      next();
+    else
+      return res.json({msg: "You are not authorized"}).status(401);
+});
+
+
+app.use('/admin', adminUser);
+app.use('/admin', adminContact);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

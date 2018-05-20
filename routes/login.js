@@ -7,7 +7,6 @@ const validate = require("validate.js");
 
 function loginUser(req, res, next) {
   
-
   let db = req.db;
   let userEmail = req.body.userEmail || req.headers['userEmail'];
   let password  = req.body.password  || req.headers['password'];
@@ -28,10 +27,8 @@ function loginUser(req, res, next) {
   console.log(val);
 
   if (val !== undefined)
-  {
-    console.log("yaya the user data is blank");
     return res.json({ data: val }).status(401);
-  }
+  
 
   let collection = db.collection('UserDetails');
   let obj = { "userEmail": userEmail,"password":password };

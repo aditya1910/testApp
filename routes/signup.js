@@ -11,12 +11,6 @@ function signup(req, res, next) {
   let password  = req.body.password;
   let userRole  = req.body.userRole?req.body.userRole:'CLIENT';
   
-  console.log(req.decoded,"role")
-  
-  if(req.decoded.role=="CLIENT" && userRole=="ADMIN"){
-    return res.json({msg:'Not Authorized'}).status(400); 
-  }
-
   const constraints = {
     password: { presence: { message: "^password can't be blank." } },
     userEmail: { presence: { message: "^userEmail can't be blank." } },
@@ -26,16 +20,13 @@ function signup(req, res, next) {
     userEmail: userEmail,
     password: password
   };
-  console.log(check);
+  
 
   let val = validate(check, constraints, { format: "flat" });
   console.log(val);
 
   if (val !== undefined)
-  {
-    console.log("yaya the user data is blank");
     return res.json({ data: val }).status(401);
-  }
 
   let collection = db.collection('UserDetails');
   let obj = { "userEmail": userEmail};
@@ -46,9 +37,8 @@ function signup(req, res, next) {
           msg: 'Error While signup'
         }).status(500)
       } else {
-        console.log(user.length);
         if (user.length === 0) {
-            collection.insertOne({"userEmail":userEmail,"password":password,"userRole":userRole},(error,result)=>{
+            collection.insertOne({"userEmail":userEmail,"password":password,"userRole":"CLIENT"},(error,result)=>{
              if(error)
               res.json({
                 msg: 'Error While signup'
@@ -58,16 +48,13 @@ function signup(req, res, next) {
             })
           
         } else if (user.length >=1) {
-            return res.status(401).json({msg: "Email already exist" });
-            res.json({ Status: 1, token: token, loginType: loginType });
+            return res.json({msg:"Email already exist"}).status(401);
         }
       }
     });
   } catch (e) {
-
-
     db.close();
-    res.status(200).json({ Status: 0, msg: "Error in login." });
+    res.json({msg:"Error in login."}).status(500);
   }
 }
 
