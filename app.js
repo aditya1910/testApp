@@ -4,7 +4,6 @@ const path = require('path');
 //const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const conf = require('./config'); 
-const expense = require('./routes/expense');
 
 const mongoose = require('./lib/mongo');
 const bodyparser = require("body-parser");
